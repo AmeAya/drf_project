@@ -1,0 +1,8 @@
+pipenv shell
+pip install django
+django-admin startproject core .
+pip install djangorestframework
+python manage.py startapp app
+
+python manage.py makemigrations
+python manage.py migrate
