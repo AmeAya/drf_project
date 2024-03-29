@@ -51,3 +51,10 @@ class ProductDetailApiView(APIView):
         product = get_object_or_404(Product, id=pk)
         product.delete()
         return Response(data={'msg': 'Product deleted!'}, status=status.HTTP_204_NO_CONTENT)
+
+
+# Создать новую модель(Минимум 3 поля)
+# Создать две вью для данной модели:
+# 1) APIView - get, post
+# 2) DetailAPIView - get, patch, delete
+# Создать сериалайзер

@@ -18,8 +18,31 @@ from django.contrib import admin
 from django.urls import path
 from app.views import *
 
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework.permissions import AllowAny
+
+SchemaView = get_schema_view(
+    info=openapi.Info(
+        title='DRF Project',
+        default_version='1.0',
+        description='This is pet project',
+        terms_of_service='',
+        contact=openapi.Contact(name='Dias Bolatov', url='', email='deobackstep@gmail.com'),
+        license=openapi.License(name='License', url='')
+    ),
+    patterns=[
+        path('api/products', ProductApiView.as_view(), name='products_api_url'),
+        path('api/products/<int:pk>', ProductDetailApiView.as_view(), name='products_detail_api_url'),
+    ],
+    public=True,
+    permission_classes=[AllowAny, ]
+)
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/products', ProductApiView.as_view(), name='products_api_url'),
     path('api/products/<int:pk>', ProductDetailApiView.as_view(), name='products_detail_api_url'),
+    path('swagger', SchemaView.with_ui()),
 ]
