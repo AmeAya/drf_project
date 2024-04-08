@@ -48,6 +48,16 @@ urlpatterns = [
     path('api/profile', ProfileApiView.as_view(), name='profile_url'),
     path('api/language', LanguageApiView.as_view(), name='lang_url'),
     path('api/logout', LogOutApiView.as_view(), name='logout_url'),
+    path('checkout', CheckOutApiView.as_view(), name='checkout_url'),
 
     path('swagger', SchemaView.with_ui()),
+]
+
+urlpatterns += [
+    path('cart/add/<int:id>/', cart_add, name='cart_add'),
+    path('cart/item_clear/<int:id>/', item_clear, name='item_clear'),
+    path('cart/item_increment/<int:id>/', item_increment, name='item_increment'),
+    path('cart/item_decrement/<int:id>/', item_decrement, name='item_decrement'),
+    path('cart/cart_clear/', cart_clear, name='cart_clear'),
+    path('cart/cart-detail/', cart_detail, name='cart_detail'),
 ]

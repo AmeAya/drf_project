@@ -144,3 +144,97 @@ class LogOutApiView(APIView):
         # 1) Проверить авторизован ли пользователь
         # 2) Импортировать logout из django.contrib.auth
         # 3) Выполнить logout и вернуть response что logout прошел успешно
+
+from cart.cart import Cart
+from django.http import JsonResponse
+
+
+def cart_add(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse(data={'msg': 'You have to log in!'}, status=status.HTTP_403_FORBIDDEN)
+    cart = Cart(request)
+    product = Product.objects.get(id=id)
+    cart.add(product=product)
+    return JsonResponse(data={'msg': 'Item added!'}, status=status.HTTP_200_OK)
+
+
+def item_clear(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse(data={'msg': 'You have to log in!'}, status=status.HTTP_403_FORBIDDEN)
+    cart = Cart(request)
+    product = Product.objects.get(id=id)
+    cart.remove(product)
+    return JsonResponse(data={'msg': 'Item deleted!'}, status=status.HTTP_200_OK)
+
+
+def item_increment(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse(data={'msg': 'You have to log in!'}, status=status.HTTP_403_FORBIDDEN)
+    cart = Cart(request)
+    product = Product.objects.get(id=id)
+    cart.add(product=product)
+    return JsonResponse(data={'msg': 'Item quantity incremented!'}, status=status.HTTP_200_OK)
+
+
+def item_decrement(request, id):
+    if not request.user.is_authenticated:
+        return JsonResponse(data={'msg': 'You have to log in!'}, status=status.HTTP_403_FORBIDDEN)
+    cart = Cart(request)
+    product = Product.objects.get(id=id)
+    cart.decrement(product=product)
+    return JsonResponse(data={'msg': 'Item quantity decremented!'}, status=status.HTTP_200_OK)
+
+
+def cart_clear(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(data={'msg': 'You have to log in!'}, status=status.HTTP_403_FORBIDDEN)
+    cart = Cart(request)
+    cart.clear()
+    return JsonResponse(data={'msg': 'Cart cleared!'}, status=status.HTTP_200_OK)
+
+
+def cart_detail(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(data={'msg': 'You have to log in!'}, status=status.HTTP_403_FORBIDDEN)
+    cart = Cart(request)
+    cart_items = []
+    total = 0
+    for key, value in cart.cart.items():
+        subtotal = float(value.get('price')) * int(value.get('quantity'))
+        value.update({'subtotal': subtotal})
+        total += subtotal
+        cart_items.append(value)
+
+    data = {
+        'items': cart_items,
+        'total': total
+    }
+    return JsonResponse(data=data, status=status.HTTP_200_OK)
+
+
+class CheckOutApiView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        cart = Cart(request)
+        total = 0
+
+        if cart.cart:
+            purchase = Purchase(total=0, customer=request.user)
+            purchase.save()
+
+            for key, value in cart.cart.items():
+                subtotal = float(value.get('price')) * int(value.get('quantity'))
+                total += subtotal
+
+                product = Product.objects.get(id=value.get('product_id'))
+                item = PurchaseItem(product=product, quantity=value.get('quantity'), subtotal=subtotal)
+                item.save()
+
+                purchase.items.add(item)
+                purchase.save()
+
+            cart.clear()
+            return Response(data={'msg': 'Check out!'}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'msg': 'Cart empty!'}, status=status.HTTP_400_BAD_REQUEST)
