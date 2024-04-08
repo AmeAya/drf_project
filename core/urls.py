@@ -44,5 +44,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/products', ProductApiView.as_view(), name='products_api_url'),
     path('api/products/<int:pk>', ProductDetailApiView.as_view(), name='products_detail_api_url'),
+    path('api/login', AuthApiView.as_view(), name='login_url'),
+    path('api/profile', ProfileApiView.as_view(), name='profile_url'),
+    path('api/language', LanguageApiView.as_view(), name='lang_url'),
+    path('api/logout', LogOutApiView.as_view(), name='logout_url'),
+
     path('swagger', SchemaView.with_ui()),
 ]

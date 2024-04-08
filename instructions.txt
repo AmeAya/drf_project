@@ -6,3 +6,10 @@ python manage.py startapp app
 
 python manage.py makemigrations
 python manage.py migrate
+
+
+1) git clone https://github.com/AmeAya/drf_project
+2) Открыть эту новую папку с гита в pycharm(file -> open -> Находим эту папку)
+3) pipenv shell
+4) pip install -r requirements.txt
+5) python manage.py runserver
