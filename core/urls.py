@@ -49,6 +49,8 @@ urlpatterns = [
     path('api/language', LanguageApiView.as_view(), name='lang_url'),
     path('api/logout', LogOutApiView.as_view(), name='logout_url'),
     path('checkout', CheckOutApiView.as_view(), name='checkout_url'),
+    path('api/my_history', HistoryApiView.as_view(), name='history_url'),
+    path('api/paginated_products', ProductPaginatorApiView.as_view(), name='paginator_url'),
 
     path('swagger', SchemaView.with_ui()),
 ]

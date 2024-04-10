@@ -234,7 +234,56 @@ class CheckOutApiView(APIView):
                 purchase.items.add(item)
                 purchase.save()
 
+            purchase.total = total
+            purchase.save()
             cart.clear()
             return Response(data={'msg': 'Check out!'}, status=status.HTTP_200_OK)
         else:
             return Response(data={'msg': 'Cart empty!'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+from django.core.paginator import Paginator, EmptyPage
+
+
+class HistoryApiView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response(data={'msg': 'You have to log in!'}, status=status.HTTP_400_BAD_REQUEST)
+        purchases = Purchase.objects.filter(customer=request.user)
+        paginator = Paginator(purchases, 2)
+        page = request.GET.get('page')
+        if page is None:
+            page = 1
+        try:
+            paginated_purchases = paginator.page(page)
+        except EmptyPage:
+            paginated_purchases = []
+
+        data = {
+            "purchases": PurchaseSerializer(paginated_purchases, many=True).data,
+            "pages": paginator.num_pages
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
+    # Добавить paginator для HistoryApiView(get) по 2 покупки на странице.
+
+
+class ProductPaginatorApiView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        products = Product.objects.all()
+        paginator = Paginator(products, 2)
+        page = request.GET.get('page')
+        if page is None:
+            page = 1
+        try:
+            paginated_products = paginator.page(page)
+        except EmptyPage:
+            paginated_products = paginator.page(1)
+        data = {
+            "products": ProductSerializer(paginated_products, many=True).data,
+            "pages": paginator.num_pages
+        }
+        return Response(data=data, status=status.HTTP_200_OK)

@@ -20,4 +20,3 @@ class PurchaseItem(models.Model):
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveSmallIntegerField(default=1)
     subtotal = models.PositiveIntegerField()
-
