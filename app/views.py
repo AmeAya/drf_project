@@ -100,10 +100,44 @@ class AuthApiView(APIView):
 class ProfileApiView(APIView):
     permission_classes = []
 
-    def get(self, request):
+    def get(self, request):  # READ USER
         if request.user.is_authenticated:
             data = UserSerializer(request.user, many=False).data
             return Response(data=data, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'msg': 'You must login!'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def post(self, request):
+        from django.db.utils import IntegrityError
+        username = request.data.get('username')
+        fn = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        password = request.data.get('password')
+        email = request.data.get('email')
+        try:
+            user = User.objects.create_user(username=username, first_name=fn, last_name=last_name, password=password,
+                                            email=email)
+            data = UserSerializer(user, many=False).data
+            return Response(data=data, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return Response(data={'msg': 'This username is already taken'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def patch(self, request):
+        if request.user.is_authenticated:
+            serializer = UserUpdateSerializer(request.user, partial=True, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data=serializer.data, status=status.HTTP_200_OK)
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data={'msg': 'You must login!'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request):
+        if request.user.is_authenticated:
+            request.user.is_active = False
+            request.user.save()
+            return Response(data={'msg': 'Your account successfully deactivated!'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data={'msg': 'You must login!'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -286,4 +320,36 @@ class ProductPaginatorApiView(APIView):
             "products": ProductSerializer(paginated_products, many=True).data,
             "pages": paginator.num_pages
         }
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# class testApiView(APIView):  # ОДНОРАЗОВАЯ АПИ ЧТОБЫ ВЕРНУТЬ ПАРОЛЬ АДМИНУ. УДАЛИТЬ ПОСЛЕ ИСПОЛЬЗОВАНИЯ
+#
+#     def get(self, request):
+#         user = User.objects.get(username='admin')
+#         user.set_password('qwerty')
+#         user.save()
+#         return Response()
+
+
+class ProductSearchApiView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        from django.db.models import Q
+        q = request.GET.get('q')
+        if q is None:
+            return Response(data=[], status=status.HTTP_200_OK)
+        products = Product.objects.filter(~Q(name__contains=q) | ~Q(description__contains=q))
+        # | - Or - ИЛИ
+        # & - And - И
+        # ~ - Negate - НЕ
+
+        # products = Product.objects.filter(name__contains=q)
+        # new = Product.objects.filter(description__contains=q)
+        # products = products.union(new)
+        # __contains - Ищет указанную часть в текст этого поля учитывая регистр
+        # __icontains - То же самое что и contains, но игнорирует регистр
+
+        data = ProductSerializer(products, many=True).data
         return Response(data=data, status=status.HTTP_200_OK)

@@ -51,3 +51,11 @@ class PurchaseSerializer(ModelSerializer):
         representation['created_at'] = instance.created_at.strftime("%d-%m-%Y %H:%M:%S")
         representation['items'] = PurchaseItemSerializer(instance.items.all(), many=True).data
         return representation
+
+
+class UserUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'first_name', 'last_name', 'email'
+        ]
