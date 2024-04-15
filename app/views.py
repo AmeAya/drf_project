@@ -353,3 +353,23 @@ class ProductSearchApiView(APIView):
 
         data = ProductSerializer(products, many=True).data
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class ProductPriceApiView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        from django.db.models import Q
+        price_min = request.GET.get('price_min')
+        price_max = request.GET.get('price_max')
+        if price_min is None or price_max is None:
+            products = Product.objects.all()
+        else:
+            products = Product.objects.filter(Q(price__gte=price_min) & Q(price__lte=price_max))
+
+            # products_min = Product.objects.filter(price__lte=price_max)
+            # products_max = Product.objects.filter(price__gte=price_min)
+            # products = products_min.union(products_max)
+
+        data = ProductSerializer(products, many=True).data
+        return Response(data=data, status=status.HTTP_200_OK)

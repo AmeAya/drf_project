@@ -52,6 +52,7 @@ urlpatterns = [
     path('api/my_history', HistoryApiView.as_view(), name='history_url'),
     path('api/paginated_products', ProductPaginatorApiView.as_view(), name='paginator_url'),
     path('api/product_search', ProductSearchApiView.as_view(), name='search_url'),
+    path('api/product_price', ProductPriceApiView.as_view(), name='product_price_url'),
 
     path('swagger', SchemaView.with_ui()),
 ]
