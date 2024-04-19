@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  backend:
+    build: .
+    expose:
+      - 8000
+    command: >
+      bash -c "python manage.py makemigrations && 
+      python manage.py migrate --noinput && 
+      python manage.py runserver"
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    depends_on:
+      - backend
